@@ -75,11 +75,18 @@
             <th 
               v-for="column in visibleColumns" 
               :key="column.id"
-              :class="{ 'cursor-move': options.draggableColumns }"
               :style="{ width: column.width + 'px', minWidth: column.width + 'px' }"
               class="relative"
             >
               <div class="flex items-center">
+                <!-- Drag Handle for Columns -->
+                <div 
+                  v-if="options.draggableColumns"
+                  class="drag-handle mr-2 cursor-move text-gray-400 hover:text-gray-600"
+                  title="Drag to reorder column"
+                >
+                  ⋮⋮
+                </div>
                 <span>{{ column.label }}</span>
                 
                 <!-- Sort Icon -->
@@ -843,12 +850,33 @@ export default {
       if (!thead) return;
       
       Sortable.create(thead, {
-        handle: 'th',
+        handle: '.drag-handle',
         animation: 150,
         onEnd: (evt) => {
-          // Update column order
-          const movedColumn = this.visibleColumnIds.splice(evt.oldIndex, 1)[0];
-          this.visibleColumnIds.splice(evt.newIndex, 0, movedColumn);
+          // Get the old and new indices, accounting for tree view column if present
+          const oldIndex = this.options.treeView ? evt.oldIndex - 1 : evt.oldIndex;
+          const newIndex = this.options.treeView ? evt.newIndex - 1 : evt.newIndex;
+          
+          if (oldIndex < 0 || newIndex < 0 || oldIndex >= this.visibleColumnIds.length || newIndex >= this.visibleColumnIds.length) {
+            return; // Skip if indices are out of bounds (e.g., dragging the tree view column)
+          }
+          
+          // Update column order in visibleColumnIds
+          const movedColumnId = this.visibleColumnIds.splice(oldIndex, 1)[0];
+          this.visibleColumnIds.splice(newIndex, 0, movedColumnId);
+          
+          // Get the field names for the moved columns
+          const movedColumn = this.columns.find(col => col.id === movedColumnId);
+          if (!movedColumn) return;
+          
+          // No need to rearrange the actual data in the rows
+          // The visibleColumns computed property already handles the column order
+          // based on visibleColumnIds, which we've already updated above
+          
+          // We just need to force a re-render to reflect the new column order
+          
+          // Force a re-render
+          this.$forceUpdate();
         }
       });
     },
