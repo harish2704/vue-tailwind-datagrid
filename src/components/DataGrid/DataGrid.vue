@@ -173,8 +173,9 @@
 
     <!-- Pagination -->
     <div v-if="options.pagination" class="data-grid-pagination">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center">
+      <div class="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
+        <!-- Page Details - Full width on mobile, left aligned on desktop -->
+        <div class="flex items-center justify-center sm:justify-start">
           <span class="text-sm text-gray-700">
             Showing
             <span class="font-medium">{{ startIndex + 1 }}</span>
@@ -186,36 +187,34 @@
           </span>
         </div>
 
-        <div class="flex items-center space-x-2">
-          <!-- Items Per Page -->
-          <div class="flex items-center">
-            <label for="perPage" class="mr-2 text-sm text-gray-700">Per Page:</label>
-            <select id="perPage" v-model="itemsPerPage" class="border rounded-md px-2 py-1 text-sm">
-              <option v-for="option in options.itemsPerPageOptions" :key="option" :value="option">
-                {{ option }}
-              </option>
-            </select>
-          </div>
+        <!-- Items Per Page - Full width on mobile, right aligned on desktop -->
+        <div class="flex items-center justify-center sm:justify-end">
+          <label for="perPage" class="mr-2 text-sm text-gray-700">Per Page:</label>
+          <select id="perPage" v-model="itemsPerPage" class="border rounded-md px-2 py-1 text-sm">
+            <option v-for="option in options.itemsPerPageOptions" :key="option" :value="option">
+              {{ option }}
+            </option>
+          </select>
+        </div>
 
-          <!-- Page Navigation -->
-          <div class="flex items-center space-x-1">
-            <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
-              class="px-2 py-1 border rounded-md text-sm disabled:opacity-50">
-              Previous
-            </button>
+        <!-- Page Navigation - Full width on mobile, right aligned on desktop -->
+        <div class="flex items-center justify-center sm:justify-end space-x-1">
+          <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+            class="px-2 py-1 border rounded-md text-sm disabled:opacity-50">
+            Previous
+          </button>
 
-            <button v-for="page in displayedPages" :key="page" @click="goToPage(page)" :class="[
-              'px-3 py-1 border rounded-md text-sm',
-              currentPage === page ? 'bg-blue-600 text-white' : 'text-gray-700'
-            ]">
-              {{ page }}
-            </button>
+          <button v-for="page in displayedPages" :key="page" @click="goToPage(page)" :class="[
+            'px-3 py-1 border rounded-md text-sm',
+            currentPage === page ? 'bg-blue-600 text-white' : 'text-gray-700'
+          ]">
+            {{ page }}
+          </button>
 
-            <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
-              class="px-2 py-1 border rounded-md text-sm disabled:opacity-50">
-              Next
-            </button>
-          </div>
+          <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+            class="px-2 py-1 border rounded-md text-sm disabled:opacity-50">
+            Next
+          </button>
         </div>
       </div>
     </div>
