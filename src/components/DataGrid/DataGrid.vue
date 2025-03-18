@@ -4,64 +4,44 @@
     <div class="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
       <!-- Global Search -->
       <div v-if="options.globalSearch" class="data-grid-search w-full md:w-1/3">
-        <input 
-          type="text" 
-          v-model="searchQuery" 
-          placeholder="Search..." 
-          class="px-4 py-2 border rounded-md w-full"
-          @input="handleSearch"
-        />
+        <input type="text" v-model="searchQuery" placeholder="Search..." class="px-4 py-2 border rounded-md w-full"
+          @input="handleSearch" />
       </div>
-      
+
       <!-- Table Actions -->
       <div class="flex flex-wrap gap-2">
         <!-- Import/Export -->
         <div v-if="options.importable || options.exportable" class="flex gap-2">
-          <button 
-            v-if="options.importable" 
-            @click="showImportModal = true" 
-            class="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
-          >
+          <button v-if="options.importable" @click="showImportModal = true"
+            class="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">
             Import
           </button>
-          <button 
-            v-if="options.exportable" 
-            @click="showExportModal = true" 
-            class="px-3 py-1 bg-green-600 text-white rounded-md text-sm hover:bg-green-700"
-          >
+          <button v-if="options.exportable" @click="showExportModal = true"
+            class="px-3 py-1 bg-green-600 text-white rounded-md text-sm hover:bg-green-700">
             Export
           </button>
         </div>
-        
+
         <!-- Column Customization -->
-        <button 
-          v-if="options.customizeColumns" 
-          @click="showColumnModal = true" 
-          class="px-3 py-1 bg-purple-600 text-white rounded-md text-sm hover:bg-purple-700"
-        >
+        <button v-if="options.customizeColumns" @click="showColumnModal = true"
+          class="px-3 py-1 bg-purple-600 text-white rounded-md text-sm hover:bg-purple-700">
           Columns
         </button>
-        
+
         <!-- Custom Formula -->
-        <button 
-          v-if="options.customFormulas" 
-          @click="showFormulaModal = true" 
-          class="px-3 py-1 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700"
-        >
+        <button v-if="options.customFormulas" @click="showFormulaModal = true"
+          class="px-3 py-1 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700">
           Add Formula
         </button>
-        
+
         <!-- Save State -->
-        <button 
-          v-if="options.saveState" 
-          @click="saveTableState" 
-          class="px-3 py-1 bg-gray-600 text-white rounded-md text-sm hover:bg-gray-700"
-        >
+        <button v-if="options.saveState" @click="saveTableState"
+          class="px-3 py-1 bg-gray-600 text-white rounded-md text-sm hover:bg-gray-700">
           Save State
         </button>
       </div>
     </div>
-    
+
     <!-- Table -->
     <div class="overflow-x-auto">
       <table class="data-grid">
@@ -70,170 +50,103 @@
           <tr>
             <!-- Expandable Icon for Tree View -->
             <th v-if="options.treeView" class="w-10"></th>
-            
+
             <!-- Column Headers -->
-            <th 
-              v-for="column in visibleColumns" 
-              :key="column.id"
-              :style="{ width: column.width + 'px', minWidth: column.width + 'px' }"
-              class="relative"
-            >
+            <th v-for="column in visibleColumns" :key="column.id"
+              :style="{ width: column.width + 'px', minWidth: column.width + 'px' }" class="relative">
               <div class="flex items-center">
                 <!-- Drag Handle for Columns -->
-                <div 
-                  v-if="options.draggableColumns"
-                  class="drag-handle mr-2 cursor-move text-gray-400 hover:text-gray-600"
-                  title="Drag to reorder column"
-                >
+                <div v-if="options.draggableColumns"
+                  class="drag-handle mr-2 cursor-move text-gray-400 hover:text-gray-600" title="Drag to reorder column">
                   ⋮⋮
                 </div>
                 <span>{{ column.label }}</span>
-                
+
                 <!-- Sort Icon -->
-                <button 
-                  v-if="column.sortable" 
-                  @click="sortBy(column.field)"
-                  class="ml-1"
-                >
+                <button v-if="column.sortable" @click="sortBy(column.field)" class="ml-1">
                   <span v-if="sortField === column.field && sortOrder === 'asc'">▲</span>
                   <span v-else-if="sortField === column.field && sortOrder === 'desc'">▼</span>
                   <span v-else>⇅</span>
                 </button>
-                
+
                 <!-- Filter Icon -->
-                <button 
-                  v-if="column.filterable" 
-                  @click="toggleFilter(column.id)"
-                  class="ml-1"
-                >
+                <button v-if="column.filterable" @click="toggleFilter(column.id)" class="ml-1 data-grid-filter-icon">
                   <span>🔍</span>
                 </button>
               </div>
-              
+
               <!-- Column Filter Dropdown -->
-              <div 
-                v-if="column.filterable && activeFilter === column.id" 
-                class="data-grid-filter"
-              >
-                <ColumnFilter 
-                  :column="column" 
-                  :filter-value="filters[column.field]"
-                  @filter-change="updateFilter(column.field, $event)"
-                  @close="activeFilter = null"
-                />
+              <div v-if="column.filterable && activeFilter === column.id" class="data-grid-filter">
+                <ColumnFilter :column="column" :filter-value="filters[column.field]"
+                  @filter-change="updateFilter(column.field, $event)" @close="activeFilter = null" />
               </div>
-              
+
               <!-- Column Resize Handle -->
-              <div 
-                v-if="options.resizableColumns"
-                class="absolute top-0 right-0 h-full w-1 bg-gray-300 cursor-col-resize"
-                @mousedown="startColumnResize($event, column)"
-              ></div>
+              <div v-if="options.resizableColumns" class="absolute top-0 right-0 h-full w-1 bg-gray-300 cursor-col-resize"
+                @mousedown="startColumnResize($event, column)"></div>
             </th>
           </tr>
         </thead>
-        
+
         <!-- Table Body -->
         <tbody class="data-grid-body">
           <template v-for="(row, rowIndex) in paginatedData" :key="row.id">
-            <tr 
-              :class="[
-                'data-grid-row', 
-                { 'cursor-move': options.draggableRows }
-              ]"
-              :data-id="row.id"
-            >
+            <tr :class="[
+              'data-grid-row',
+              { 'cursor-move': options.draggableRows }
+            ]" :data-id="row.id">
               <!-- Tree View Expand/Collapse -->
               <td v-if="options.treeView" class="text-center">
-                <button 
-                  v-if="hasChildren(row.id)" 
-                  @click="toggleRowExpand(row.id)"
-                  class="w-6 h-6 text-center"
-                >
+                <button v-if="hasChildren(row.id)" @click="toggleRowExpand(row.id)" class="w-6 h-6 text-center">
                   <span v-if="expandedRows.includes(row.id)">-</span>
                   <span v-else>+</span>
                 </button>
               </td>
-              
+
               <!-- Row Cells -->
-              <td 
-                v-for="column in visibleColumns" 
-                :key="column.id"
-                :class="[
-                  'data-grid-cell', 
-                  { 'data-grid-cell-editable': column.editable && options.editable }
-                ]"
-                @click="column.editable && options.editable ? startEditing(row, column) : null"
-                @keydown="handleKeyNavigation($event, rowIndex, column.id)"
-                tabindex="0"
-              >
+              <td v-for="column in visibleColumns" :key="column.id" :class="[
+                'data-grid-cell',
+                { 'data-grid-cell-editable': column.editable && options.editable }
+              ]" @click="column.editable && options.editable ? startEditing(row, column) : null"
+                @keydown="handleKeyNavigation($event, rowIndex, column.id)" tabindex="0">
                 <!-- Cell Content -->
                 <div v-if="editingCell.rowId === row.id && editingCell.columnId === column.id">
-                  <CellEditor 
-                    :value="row[column.field]" 
-                    :column="column"
-                    @save="saveCell"
-                    @cancel="cancelEditing"
-                  />
+                  <CellEditor :value="row[column.field]" :column="column" @save="saveCell" @cancel="cancelEditing" />
                 </div>
                 <div v-else>
-                  <CellRenderer 
-                    :value="row[column.field]" 
-                    :column="column" 
-                    :row="row"
-                  />
+                  <CellRenderer :value="row[column.field]" :column="column" :row="row" />
                 </div>
               </td>
             </tr>
-            
+
             <!-- Child Rows for Tree View -->
             <template v-if="options.treeView && expandedRows.includes(row.id)">
-              <tr 
-                v-for="childRow in getChildRows(row.id)" 
-                :key="childRow.id"
-                class="data-grid-row bg-gray-50"
-              >
+              <tr v-for="childRow in getChildRows(row.id)" :key="childRow.id" class="data-grid-row bg-gray-50">
                 <td v-if="options.treeView" class="text-center">
-                  <button 
-                    v-if="hasChildren(childRow.id)" 
-                    @click="toggleRowExpand(childRow.id)"
-                    class="w-6 h-6 text-center ml-4"
-                  >
+                  <button v-if="hasChildren(childRow.id)" @click="toggleRowExpand(childRow.id)"
+                    class="w-6 h-6 text-center ml-4">
                     <span v-if="expandedRows.includes(childRow.id)">-</span>
                     <span v-else>+</span>
                   </button>
                   <span v-else class="ml-4"></span>
                 </td>
-                
-                <td 
-                  v-for="column in visibleColumns" 
-                  :key="column.id"
-                  :class="[
-                    'data-grid-cell', 
-                    { 'data-grid-cell-editable': column.editable && options.editable }
-                  ]"
-                  @click="column.editable && options.editable ? startEditing(childRow, column) : null"
-                >
+
+                <td v-for="column in visibleColumns" :key="column.id" :class="[
+                  'data-grid-cell',
+                  { 'data-grid-cell-editable': column.editable && options.editable }
+                ]" @click="column.editable && options.editable ? startEditing(childRow, column) : null">
                   <div v-if="editingCell.rowId === childRow.id && editingCell.columnId === column.id">
-                    <CellEditor 
-                      :value="childRow[column.field]" 
-                      :column="column"
-                      @save="saveCell"
-                      @cancel="cancelEditing"
-                    />
+                    <CellEditor :value="childRow[column.field]" :column="column" @save="saveCell"
+                      @cancel="cancelEditing" />
                   </div>
                   <div v-else>
-                    <CellRenderer 
-                      :value="childRow[column.field]" 
-                      :column="column" 
-                      :row="childRow"
-                    />
+                    <CellRenderer :value="childRow[column.field]" :column="column" :row="childRow" />
                   </div>
                 </td>
               </tr>
             </template>
           </template>
-          
+
           <!-- Empty State -->
           <tr v-if="paginatedData.length === 0">
             <td :colspan="visibleColumns.length + (options.treeView ? 1 : 0)" class="py-4 text-center text-gray-500">
@@ -243,7 +156,7 @@
         </tbody>
       </table>
     </div>
-    
+
     <!-- Pagination -->
     <div v-if="options.pagination" class="data-grid-pagination">
       <div class="flex items-center justify-between">
@@ -258,84 +171,51 @@
             results
           </span>
         </div>
-        
+
         <div class="flex items-center space-x-2">
           <!-- Items Per Page -->
           <div class="flex items-center">
             <label for="perPage" class="mr-2 text-sm text-gray-700">Per Page:</label>
-            <select 
-              id="perPage" 
-              v-model="itemsPerPage" 
-              class="border rounded-md px-2 py-1 text-sm"
-            >
+            <select id="perPage" v-model="itemsPerPage" class="border rounded-md px-2 py-1 text-sm">
               <option v-for="option in options.itemsPerPageOptions" :key="option" :value="option">
                 {{ option }}
               </option>
             </select>
           </div>
-          
+
           <!-- Page Navigation -->
           <div class="flex items-center space-x-1">
-            <button 
-              @click="goToPage(currentPage - 1)" 
-              :disabled="currentPage === 1"
-              class="px-2 py-1 border rounded-md text-sm disabled:opacity-50"
-            >
+            <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+              class="px-2 py-1 border rounded-md text-sm disabled:opacity-50">
               Previous
             </button>
-            
-            <button 
-              v-for="page in displayedPages" 
-              :key="page"
-              @click="goToPage(page)"
-              :class="[
-                'px-3 py-1 border rounded-md text-sm',
-                currentPage === page ? 'bg-blue-600 text-white' : 'text-gray-700'
-              ]"
-            >
+
+            <button v-for="page in displayedPages" :key="page" @click="goToPage(page)" :class="[
+              'px-3 py-1 border rounded-md text-sm',
+              currentPage === page ? 'bg-blue-600 text-white' : 'text-gray-700'
+            ]">
               {{ page }}
             </button>
-            
-            <button 
-              @click="goToPage(currentPage + 1)" 
-              :disabled="currentPage === totalPages"
-              class="px-2 py-1 border rounded-md text-sm disabled:opacity-50"
-            >
+
+            <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+              class="px-2 py-1 border rounded-md text-sm disabled:opacity-50">
               Next
             </button>
           </div>
         </div>
       </div>
     </div>
-    
+
     <!-- Modals -->
-    <ImportModal 
-      v-if="showImportModal" 
-      @close="showImportModal = false"
-      @import="importData"
-    />
-    
-    <ExportModal 
-      v-if="showExportModal" 
-      :data="filteredData"
-      :columns="visibleColumns"
-      @close="showExportModal = false"
-    />
-    
-    <ColumnModal 
-      v-if="showColumnModal" 
-      :columns="columns"
-      :visible-columns="visibleColumnIds"
-      @update="updateVisibleColumns"
-      @close="showColumnModal = false"
-    />
-    
-    <FormulaModal 
-      v-if="showFormulaModal" 
-      :columns="columns"
-      @add-formula="addFormulaColumn"
-      @close="showFormulaModal = false"
-    />
+    <ImportModal v-if="showImportModal" @close="showImportModal = false" @import="importData" />
+
+    <ExportModal v-if="showExportModal" :data="filteredData" :columns="visibleColumns" @close="showExportModal = false" />
+
+    <ColumnModal v-if="showColumnModal" :columns="columns" :visible-columns="visibleColumnIds"
+      @update="updateVisibleColumns" @close="showColumnModal = false" />
+
+    <FormulaModal v-if="showFormulaModal" :columns="columns" @add-formula="addFormulaColumn"
+      @close="showFormulaModal = false" />
   </div>
 </template>
 
@@ -349,6 +229,7 @@ import ImportModal from './ImportModal.vue';
 import ExportModal from './ExportModal.vue';
 import ColumnModal from './ColumnModal.vue';
 import FormulaModal from './FormulaModal.vue';
+import { debug } from './logger.js';
 
 export default {
   name: 'DataGrid',
@@ -392,41 +273,42 @@ export default {
   },
   data() {
     return {
+      columnsHashMap: new Map(),
       // Data state
       localData: [],
-      
+
       // Sorting
       sortField: '',
       sortOrder: 'asc',
-      
+
       // Filtering
       filters: {},
       activeFilter: null,
       searchQuery: '',
-      
+
       // Pagination
       currentPage: 1,
       itemsPerPage: 10,
-      
+
       // Editing
       editingCell: {
         rowId: null,
         columnId: null,
         value: null
       },
-      
+
       // Column visibility
       visibleColumnIds: [],
-      
+
       // Tree view
       expandedRows: [],
-      
+
       // Modals
       showImportModal: false,
       showExportModal: false,
       showColumnModal: false,
       showFormulaModal: false,
-      
+
       // Resizing
       resizingColumn: null,
       startX: 0,
@@ -437,13 +319,13 @@ export default {
     // Filtered data based on filters and search query
     filteredData() {
       let result = [...this.localData];
-      
+
       // Apply column filters
       Object.keys(this.filters).forEach(field => {
         const filterValue = this.filters[field];
         if (filterValue !== null && filterValue !== undefined && filterValue !== '') {
           const column = this.columns.find(col => col.field === field);
-          
+
           if (column) {
             switch (column.filterType) {
               case 'text':
@@ -483,7 +365,7 @@ export default {
           }
         }
       });
-      
+
       // Apply global search
       if (this.searchQuery) {
         const query = this.searchQuery.toLowerCase();
@@ -495,13 +377,13 @@ export default {
           });
         });
       }
-      
+
       // Apply sorting
       if (this.sortField) {
         result.sort((a, b) => {
           let aValue = a[this.sortField];
           let bValue = b[this.sortField];
-          
+
           // Handle different data types
           if (typeof aValue === 'string') {
             aValue = aValue.toLowerCase();
@@ -513,44 +395,44 @@ export default {
             aValue = aValue.join(',');
             bValue = bValue.join(',');
           }
-          
+
           if (aValue < bValue) return this.sortOrder === 'asc' ? -1 : 1;
           if (aValue > bValue) return this.sortOrder === 'asc' ? 1 : -1;
           return 0;
         });
       }
-      
+
       return result;
     },
-    
+
     // Paginated data for current page
     paginatedData() {
       if (!this.options.pagination) return this.filteredData;
-      
+
       const start = (this.currentPage - 1) * this.itemsPerPage;
       const end = start + this.itemsPerPage;
-      
+
       return this.filteredData.slice(start, end);
     },
-    
+
     // Pagination info
     totalPages() {
       return Math.ceil(this.filteredData.length / this.itemsPerPage);
     },
-    
+
     startIndex() {
       return (this.currentPage - 1) * this.itemsPerPage;
     },
-    
+
     endIndex() {
       return this.startIndex + this.itemsPerPage;
     },
-    
+
     // Pages to display in pagination
     displayedPages() {
       const pages = [];
       const maxPages = 5;
-      
+
       if (this.totalPages <= maxPages) {
         for (let i = 1; i <= this.totalPages; i++) {
           pages.push(i);
@@ -558,27 +440,27 @@ export default {
       } else {
         let startPage = Math.max(1, this.currentPage - Math.floor(maxPages / 2));
         let endPage = startPage + maxPages - 1;
-        
+
         if (endPage > this.totalPages) {
           endPage = this.totalPages;
           startPage = Math.max(1, endPage - maxPages + 1);
         }
-        
+
         for (let i = startPage; i <= endPage; i++) {
           pages.push(i);
         }
       }
-      
+
       return pages;
     },
-    
+
     // Visible columns
     visibleColumns() {
       if (this.visibleColumnIds.length === 0) {
         return this.columns;
       }
-      
-      return this.columns.filter(column => this.visibleColumnIds.includes(column.id));
+
+      return this.visibleColumnIds.map(i => this.columnsHashMap.get(i));
     }
   },
   watch: {
@@ -591,9 +473,7 @@ export default {
     columns: {
       immediate: true,
       handler(newColumns) {
-        if (this.visibleColumnIds.length === 0) {
-          this.visibleColumnIds = newColumns.map(col => col.id);
-        }
+        this.onChangeColumns(newColumns);
       }
     },
     'options.itemsPerPage': {
@@ -606,23 +486,23 @@ export default {
   mounted() {
     // Load saved state if available
     this.loadTableState();
-    
+
     // Initialize sortable for draggable rows
     if (this.options.draggableRows) {
       this.initDraggableRows();
     }
-    
+
     // Initialize sortable for draggable columns
     if (this.options.draggableColumns) {
       this.initDraggableColumns();
     }
-    
+
     // Add event listener for column resizing
     if (this.options.resizableColumns) {
       document.addEventListener('mousemove', this.handleColumnResize);
       document.addEventListener('mouseup', this.stopColumnResize);
     }
-    
+
     // Add event listener for click outside filter
     document.addEventListener('click', this.handleClickOutside);
   },
@@ -632,10 +512,19 @@ export default {
       document.removeEventListener('mousemove', this.handleColumnResize);
       document.removeEventListener('mouseup', this.stopColumnResize);
     }
-    
+
     document.removeEventListener('click', this.handleClickOutside);
   },
   methods: {
+    onChangeColumns(newColumns) {
+      if (this.visibleColumnIds.length === 0) {
+        this.visibleColumnIds = newColumns.map(col => col.id);
+      }
+      for (let i of newColumns) {
+        this.columnsHashMap.set(i.id, i);
+      }
+      debug('Set columnsHashMap', this.columnsHashMap);
+    },
     // Sorting
     sortBy(field) {
       if (this.sortField === field) {
@@ -645,12 +534,13 @@ export default {
         this.sortOrder = 'asc';
       }
     },
-    
+
     // Filtering
     toggleFilter(columnId) {
+      debug('toggleFilter clicked');
       this.activeFilter = this.activeFilter === columnId ? null : columnId;
     },
-    
+
     updateFilter(field, value) {
       this.filters = {
         ...this.filters,
@@ -658,52 +548,53 @@ export default {
       };
       this.currentPage = 1;
     },
-    
-    handleSearch: debounce(function() {
+
+    handleSearch: debounce(function () {
       this.currentPage = 1;
     }, 300),
-    
+
     handleClickOutside(event) {
-      if (this.activeFilter && !event.target.closest('.data-grid-filter')) {
+      debug('handleClickOutside clicked');
+      if (this.activeFilter && !(event.target.closest('.data-grid-filter') || event.target.closest('.data-grid-filter-icon'))) {
         this.activeFilter = null;
       }
     },
-    
+
     // Pagination
     goToPage(page) {
       if (page >= 1 && page <= this.totalPages) {
         this.currentPage = page;
       }
     },
-    
+
     // Cell editing
     startEditing(row, column) {
       if (!column.editable || !this.options.editable) return;
-      
+
       this.editingCell = {
         rowId: row.id,
         columnId: column.id,
         value: row[column.field]
       };
     },
-    
+
     saveCell(value) {
       const rowIndex = this.localData.findIndex(row => row.id === this.editingCell.rowId);
       if (rowIndex === -1) return;
-      
+
       const column = this.columns.find(col => col.id === this.editingCell.columnId);
       if (!column) return;
-      
+
       // Update the data
       this.localData[rowIndex][column.field] = value;
-      
+
       // Emit event
       this.$emit('row-updated', this.localData[rowIndex]);
-      
+
       // Reset editing state
       this.cancelEditing();
     },
-    
+
     cancelEditing() {
       this.editingCell = {
         rowId: null,
@@ -711,14 +602,14 @@ export default {
         value: null
       };
     },
-    
+
     // Keyboard navigation
     handleKeyNavigation(event, rowIndex, columnId) {
       if (this.editingCell.rowId !== null) return;
-      
+
       const columnIndex = this.visibleColumns.findIndex(col => col.id === columnId);
       if (columnIndex === -1) return;
-      
+
       switch (event.key) {
         case 'ArrowUp':
           if (rowIndex > 0) {
@@ -765,43 +656,44 @@ export default {
           break;
       }
     },
-    
+
     // Column visibility
     updateVisibleColumns(columnIds) {
       this.visibleColumnIds = columnIds;
     },
-    
+
     // Import/Export
     importData(data) {
       this.localData = data;
       this.showImportModal = false;
     },
-    
+
     // Custom formula columns
     addFormulaColumn(formulaColumn) {
       // Add the new column to the columns array
       this.columns.push(formulaColumn);
-      
+
       // Add the column to visible columns
       this.visibleColumnIds.push(formulaColumn.id);
-      
+
       // Calculate values for all rows
       this.localData.forEach(row => {
         row[formulaColumn.field] = this.evaluateFormula(formulaColumn.formula, row);
       });
+      this.onChangeColumns(this.columns);
     },
-    
+
     evaluateFormula(formula, row) {
       try {
         // Replace column references with actual values
         const columns = this.columns;
         let evalFormula = formula;
-        
+
         columns.forEach(col => {
           const regex = new RegExp(`\\[${col.field}\\]`, 'g');
           evalFormula = evalFormula.replace(regex, row[col.field] || 0);
         });
-        
+
         // Evaluate the formula
         return eval(evalFormula);
       } catch (error) {
@@ -809,16 +701,16 @@ export default {
         return 'Error';
       }
     },
-    
+
     // Tree view
     hasChildren(rowId) {
       return this.localData.some(row => row.parentId === rowId);
     },
-    
+
     getChildRows(parentId) {
       return this.localData.filter(row => row.parentId === parentId);
     },
-    
+
     toggleRowExpand(rowId) {
       const index = this.expandedRows.indexOf(rowId);
       if (index === -1) {
@@ -827,12 +719,12 @@ export default {
         this.expandedRows.splice(index, 1);
       }
     },
-    
+
     // Draggable rows
     initDraggableRows() {
       const tbody = document.querySelector('.data-grid-body');
       if (!tbody) return;
-      
+
       Sortable.create(tbody, {
         handle: '.data-grid-row',
         animation: 150,
@@ -843,12 +735,12 @@ export default {
         }
       });
     },
-    
+
     // Draggable columns
     initDraggableColumns() {
       const thead = document.querySelector('.data-grid-header tr');
       if (!thead) return;
-      
+
       Sortable.create(thead, {
         handle: '.drag-handle',
         animation: 150,
@@ -856,31 +748,31 @@ export default {
           // Get the old and new indices, accounting for tree view column if present
           const oldIndex = this.options.treeView ? evt.oldIndex - 1 : evt.oldIndex;
           const newIndex = this.options.treeView ? evt.newIndex - 1 : evt.newIndex;
-          
+
           if (oldIndex < 0 || newIndex < 0 || oldIndex >= this.visibleColumnIds.length || newIndex >= this.visibleColumnIds.length) {
             return; // Skip if indices are out of bounds (e.g., dragging the tree view column)
           }
-          
+
           // Update column order in visibleColumnIds
           const movedColumnId = this.visibleColumnIds.splice(oldIndex, 1)[0];
           this.visibleColumnIds.splice(newIndex, 0, movedColumnId);
-          
+
           // Get the field names for the moved columns
           const movedColumn = this.columns.find(col => col.id === movedColumnId);
           if (!movedColumn) return;
-          
+
           // No need to rearrange the actual data in the rows
           // The visibleColumns computed property already handles the column order
           // based on visibleColumnIds, which we've already updated above
-          
+
           // We just need to force a re-render to reflect the new column order
-          
+
           // Force a re-render
           this.$forceUpdate();
         }
       });
     },
-    
+
     // Column resizing
     startColumnResize(event, column) {
       this.resizingColumn = column;
@@ -888,24 +780,24 @@ export default {
       this.startWidth = column.width;
       event.preventDefault();
     },
-    
+
     handleColumnResize(event) {
       if (!this.resizingColumn) return;
-      
+
       const diff = event.pageX - this.startX;
       const newWidth = Math.max(50, this.startWidth + diff);
-      
+
       // Update column width
       const columnIndex = this.columns.findIndex(col => col.id === this.resizingColumn.id);
       if (columnIndex !== -1) {
         this.columns[columnIndex].width = newWidth;
       }
     },
-    
+
     stopColumnResize() {
       this.resizingColumn = null;
     },
-    
+
     // Save/Load state
     saveTableState() {
       const state = {
@@ -921,17 +813,17 @@ export default {
         itemsPerPage: this.itemsPerPage,
         expandedRows: this.expandedRows
       };
-      
+
       localStorage.setItem('dataGridState', JSON.stringify(state));
     },
-    
+
     loadTableState() {
       try {
         const savedState = localStorage.getItem('dataGridState');
         if (!savedState) return;
-        
+
         const state = JSON.parse(savedState);
-        
+
         // Restore state
         this.sortField = state.sortField || '';
         this.sortOrder = state.sortOrder || 'asc';
@@ -940,7 +832,7 @@ export default {
         this.currentPage = state.currentPage || 1;
         this.itemsPerPage = state.itemsPerPage || this.options.itemsPerPage;
         this.expandedRows = state.expandedRows || [];
-        
+
         // Restore column widths
         if (state.columns) {
           state.columns.forEach(stateCol => {
