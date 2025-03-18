@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 const generateRandomName = () => {
   const firstNames = ['John', 'Jane', 'Michael', 'Emily', 'David', 'Sarah', 'Robert', 'Lisa', 'William', 'Emma', 'James', 'Olivia', 'Daniel', 'Sophia', 'Matthew', 'Ava', 'Joseph', 'Isabella', 'Christopher', 'Mia'];
   const lastNames = ['Smith', 'Johnson', 'Williams', 'Jones', 'Brown', 'Davis', 'Miller', 'Wilson', 'Moore', 'Taylor', 'Anderson', 'Thomas', 'Jackson', 'White', 'Harris', 'Martin', 'Thompson', 'Garcia', 'Martinez', 'Robinson'];
-  
+
   return `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`;
 };
 
@@ -41,14 +41,14 @@ const generateRandomTags = () => {
   const allTags = ['Frontend', 'Backend', 'UI', 'UX', 'Database', 'API', 'Mobile', 'Web', 'Cloud', 'DevOps', 'Testing', 'Security'];
   const numTags = Math.floor(Math.random() * 3) + 1;
   const tags = [];
-  
+
   for (let i = 0; i < numTags; i++) {
     const randomTag = allTags[Math.floor(Math.random() * allTags.length)];
     if (!tags.includes(randomTag)) {
       tags.push(randomTag);
     }
   }
-  
+
   return tags;
 };
 
@@ -62,39 +62,67 @@ const generateRandomDepartment = () => {
   return departments[Math.floor(Math.random() * departments.length)];
 };
 
-// Generate hierarchical data for tree view
-const generateHierarchicalData = (parentId = null, level = 0, maxLevel = 2) => {
-  if (level > maxLevel) return [];
-  
-  const items = [];
-  const count = Math.floor(Math.random() * 3) + 1;
-  
-  for (let i = 0; i < count; i++) {
-    const id = uuidv4();
-    const item = {
-      id,
-      parentId,
-      name: generateRandomName(),
-      department: generateRandomDepartment(),
-      level
-    };
-    
-    items.push(item);
-    
-    // Add children recursively
-    if (Math.random() > 0.3) {
-      const children = generateHierarchicalData(id, level + 1, maxLevel);
-      items.push(...children);
+
+/**
+ * Randomly assigns parentId properties to elements in an array of objects
+ * @param {Array} items - Array of objects, each with an 'id' property
+ * @param {number} parentPercentage - Percentage of items that should become parents (0-100)
+ * @param {number} avgChildrenPerParent - Average number of children per parent
+ * @return {Array} - The modified array with parentId relationships
+ */
+function applyHierarchicalData(items, parentPercentage = 30, avgChildrenPerParent = 3) {
+  if (!items || items.length < 2) return items;
+
+  // Create a copy of the array to avoid modifying the original
+  const result = [...items];
+
+  // Calculate number of parent items based on percentage
+  const numParents = Math.max(1, Math.floor(items.length * parentPercentage / 100));
+
+  // Randomly select parent indices
+  const parentIndices = [];
+  while (parentIndices.length < numParents) {
+    const randomIndex = Math.floor(Math.random() * items.length);
+    if (!parentIndices.includes(randomIndex)) {
+      parentIndices.push(randomIndex);
     }
   }
-  
-  return items;
-};
+
+  // For each parent, assign random children
+  parentIndices.forEach(parentIndex => {
+    const parentId = result[parentIndex].id;
+
+    // Determine number of children for this parent (with some variation)
+    const numChildren = Math.max(1, Math.floor(avgChildrenPerParent * (0.5 + Math.random())));
+
+    // Assign consecutive children starting from a random position
+    const startPos = Math.floor(Math.random() * (items.length - numChildren));
+    for (let i = 0; i < numChildren; i++) {
+      const childIndex = (startPos + i) % items.length;
+
+      // Skip if we're trying to make a parent its own child
+      // or if this item is already a parent
+      if (childIndex !== parentIndex && !parentIndices.includes(childIndex)) {
+        result[childIndex].parentId = parentId;
+      }
+    }
+  });
+
+  return result;
+}
+
+// Example usage:
+// const items = [
+//   { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, 
+//   { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 }, { id: 9 }, { id: 10 }
+// ];
+// const result = assignRandomParentIds(items);
+// console.log(result);
 
 // Generate sample data
 export const generateSampleData = (count = 100) => {
-  const data = [];
-  
+  let data = [];
+
   // Generate regular data
   for (let i = 0; i < count; i++) {
     const name = generateRandomName();
@@ -112,14 +140,13 @@ export const generateSampleData = (count = 100) => {
       department: generateRandomDepartment(),
       parentId: null
     };
-    
+
     data.push(row);
   }
-  
+
   // Add some hierarchical data
-  const hierarchicalData = generateHierarchicalData();
-  data.push(...hierarchicalData);
-  
+  data = applyHierarchicalData(data);
+
   return data;
 };
 

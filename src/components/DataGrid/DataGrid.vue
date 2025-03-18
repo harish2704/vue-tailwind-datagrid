@@ -49,10 +49,10 @@
         <thead class="data-grid-header">
           <tr>
             <!-- Drag Handle Column for Rows -->
-            <th v-if="options.draggableRows" class="w-10"></th>
+            <th v-if="options.draggableRows" class="w-10">#</th>
 
             <!-- Expandable Icon for Tree View -->
-            <th v-if="options.treeView" class="w-10"></th>
+            <th v-if="options.treeView" class="w-10">#</th>
 
             <!-- Column Headers -->
             <th v-for="column in visibleColumns" :key="column.id"
@@ -810,13 +810,12 @@ export default {
         animation: 150,
         onEnd: (evt) => {
           // Get the old and new indices, accounting for tree view column if present
-          const oldIndex = this.options.treeView ? evt.oldIndex - 1 : evt.oldIndex;
-          const newIndex = this.options.treeView ? evt.newIndex - 1 : evt.newIndex;
+          const oldIndex = this.options.treeView ? evt.oldIndex - 2 : evt.oldIndex - 1;
+          const newIndex = this.options.treeView ? evt.newIndex - 2 : evt.newIndex - 1;
 
           if (oldIndex < 0 || newIndex < 0 || oldIndex >= this.visibleColumnIds.length || newIndex >= this.visibleColumnIds.length) {
             return; // Skip if indices are out of bounds (e.g., dragging the tree view column)
           }
-
           // Update column order in visibleColumnIds
           const movedColumnId = this.visibleColumnIds.splice(oldIndex, 1)[0];
           this.visibleColumnIds.splice(newIndex, 0, movedColumnId);
