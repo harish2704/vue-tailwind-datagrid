@@ -1,10 +1,10 @@
 <template>
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6">
+  <div class="data-grid-modal">
+    <div class="data-grid-modal-content">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-bold">Customize Columns</h2>
-        <button 
-          @click="$emit('close')" 
+        <button
+          @click="$emit('close')"
           class="text-gray-500 hover:text-gray-700 text-xl"
         >
           &times;
@@ -12,31 +12,31 @@
       </div>
       
       <div class="mb-4">
-        <div class="flex justify-between mb-2">
-          <button 
+        <div class="flex justify-between mb-2 flex-col sm:flex-row">
+          <button
             @click="selectAll"
-            class="px-3 py-1 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+            class="px-3 py-1 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 mb-2 sm:mb-0"
           >
             Select All
           </button>
-          <button 
+          <button
             @click="deselectAll"
             class="px-3 py-1 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
           >
             Deselect All
           </button>
         </div>
-        
+
         <div class="border rounded-md p-4 max-h-80 overflow-y-auto">
-          <div 
-            v-for="column in sortedColumns" 
+          <div
+            v-for="column in sortedColumns"
             :key="column.id"
             class="flex items-center justify-between py-2 border-b last:border-b-0"
           >
             <div class="flex items-center">
-              <input 
-                type="checkbox" 
-                :id="column.id" 
+              <input
+                type="checkbox"
+                :id="column.id"
                 v-model="selectedColumns"
                 :value="column.id"
                 class="rounded text-blue-500 focus:ring-blue-500"
@@ -45,19 +45,19 @@
                 {{ column.label }}
               </label>
             </div>
-            
+
             <div class="flex items-center">
-              <button 
+              <button
                 @click="moveColumnUp(column.id)"
                 :disabled="isFirstColumn(column.id)"
-                class="text-gray-500 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                class="text-gray-500 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed px-2 py-1 rounded-md"
               >
                 ↑
               </button>
-              <button 
+              <button
                 @click="moveColumnDown(column.id)"
                 :disabled="isLastColumn(column.id)"
-                class="text-gray-500 hover:text-gray-700 ml-2 disabled:opacity-30 disabled:cursor-not-allowed"
+                class="text-gray-500 hover:text-gray-700 ml-2 disabled:opacity-30 disabled:cursor-not-allowed px-2 py-1 rounded-md"
               >
                 ↓
               </button>

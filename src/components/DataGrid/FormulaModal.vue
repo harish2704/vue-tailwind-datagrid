@@ -1,10 +1,10 @@
 <template>
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6">
+  <div class="data-grid-modal">
+    <div class="data-grid-modal-content">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-bold">Add Formula Column</h2>
-        <button 
-          @click="$emit('close')" 
+        <button
+          @click="$emit('close')"
           class="text-gray-500 hover:text-gray-700 text-xl"
         >
           &times;
@@ -47,17 +47,17 @@
             Available Columns
           </label>
           <div class="border rounded-md p-2 max-h-40 overflow-y-auto">
-            <div 
-              v-for="column in availableColumns" 
+            <div
+              v-for="column in availableColumns"
               :key="column.id"
               class="flex items-center justify-between py-1 border-b last:border-b-0"
             >
               <div class="text-sm text-gray-700">
                 {{ column.label }}
               </div>
-              <button 
+              <button
                 @click="insertColumnReference(column.field)"
-                class="px-2 py-0.5 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
               >
                 Insert
               </button>
