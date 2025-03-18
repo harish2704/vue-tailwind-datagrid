@@ -86,7 +86,8 @@
 
               <!-- Column Resize Handle -->
               <div v-if="options.resizableColumns" class="absolute top-0 right-0 h-full w-1 bg-gray-300 cursor-col-resize"
-                @mousedown="startColumnResize($event, column)"></div>
+                @mousedown="startColumnResize($event, column)" 
+                @touchstart="startColumnResize($event, column)" ></div>
             </th>
           </tr>
         </thead>
@@ -524,11 +525,61 @@ export default {
     if (this.options.resizableColumns) {
       document.removeEventListener('mousemove', this.handleColumnResize);
       document.removeEventListener('mouseup', this.stopColumnResize);
+      document.removeEventListener('touchmove', this.handleTouchColumnResize);
+      document.removeEventListener('touchend', this.stopTouchColumnResize);
     }
 
     document.removeEventListener('click', this.handleClickOutside);
   },
   methods: {
+    // Update the startColumnResize method to handle both mouse and touch events
+    startColumnResize(event, column) {
+      // Prevent default browser behavior to avoid scrolling
+      event.preventDefault();
+      event.stopPropagation();
+
+      this.resizingColumn = column;
+
+      // Handle both mouse and touch events
+      if (event.type === 'touchstart') {
+        this.startX = event.touches[0].pageX;
+      } else {
+        this.startX = event.pageX;
+      }
+
+      this.startWidth = column.width;
+
+      // For touch events, add touch-specific event listeners
+      if (event.type === 'touchstart') {
+        document.addEventListener('touchmove', this.handleTouchColumnResize, { passive: false });
+        document.addEventListener('touchend', this.stopTouchColumnResize);
+      }
+    },
+
+    // Add a touch-specific resize handler
+    handleTouchColumnResize(event) {
+      if (!this.resizingColumn) return;
+
+      // Prevent default to stop scrolling
+      event.preventDefault();
+
+      const diff = event.touches[0].pageX - this.startX;
+      const newWidth = Math.max(50, this.startWidth + diff);
+
+      // Update column width
+      const columnIndex = this.columns.findIndex(col => col.id === this.resizingColumn.id);
+      if (columnIndex !== -1) {
+        this.columns[columnIndex].width = newWidth;
+      }
+    },
+
+    // Add a touch-specific stop resize handler
+    stopTouchColumnResize() {
+      this.resizingColumn = null;
+      document.removeEventListener('touchmove', this.handleTouchColumnResize);
+      document.removeEventListener('touchend', this.stopTouchColumnResize);
+    },
+
     onChangeColumns(newColumns) {
       if (this.visibleColumnIds.length === 0) {
         this.visibleColumnIds = newColumns.map(col => col.id);
@@ -784,14 +835,6 @@ export default {
           this.$forceUpdate();
         }
       });
-    },
-
-    // Column resizing
-    startColumnResize(event, column) {
-      this.resizingColumn = column;
-      this.startX = event.pageX;
-      this.startWidth = column.width;
-      event.preventDefault();
     },
 
     handleColumnResize(event) {
