@@ -48,6 +48,9 @@
         <!-- Table Header -->
         <thead class="data-grid-header">
           <tr>
+            <!-- Drag Handle Column for Rows -->
+            <th v-if="options.draggableRows" class="w-10"></th>
+
             <!-- Expandable Icon for Tree View -->
             <th v-if="options.treeView" class="w-10"></th>
 
@@ -91,10 +94,14 @@
         <!-- Table Body -->
         <tbody class="data-grid-body">
           <template v-for="(row, rowIndex) in paginatedData" :key="row.id">
-            <tr :class="[
-              'data-grid-row',
-              { 'cursor-move': options.draggableRows }
-            ]" :data-id="row.id">
+            <tr :class="['data-grid-row']" :data-id="row.id">
+              <!-- Drag Handle for Rows -->
+              <td v-if="options.draggableRows" class="text-center w-10">
+                <div class="row-drag-handle cursor-move text-gray-400 hover:text-gray-600" title="Drag to reorder row">
+                  ⋮⋮
+                </div>
+              </td>
+
               <!-- Tree View Expand/Collapse -->
               <td v-if="options.treeView" class="text-center">
                 <button v-if="hasChildren(row.id)" @click="toggleRowExpand(row.id)" class="w-6 h-6 text-center">
@@ -122,6 +129,13 @@
             <!-- Child Rows for Tree View -->
             <template v-if="options.treeView && expandedRows.includes(row.id)">
               <tr v-for="childRow in getChildRows(row.id)" :key="childRow.id" class="data-grid-row bg-gray-50">
+                <!-- Drag Handle for Child Rows -->
+                <td v-if="options.draggableRows" class="text-center w-10">
+                  <div class="row-drag-handle cursor-move text-gray-400 hover:text-gray-600" title="Drag to reorder row">
+                    ⋮⋮
+                  </div>
+                </td>
+
                 <td v-if="options.treeView" class="text-center">
                   <button v-if="hasChildren(childRow.id)" @click="toggleRowExpand(childRow.id)"
                     class="w-6 h-6 text-center ml-4">
@@ -726,7 +740,7 @@ export default {
       if (!tbody) return;
 
       Sortable.create(tbody, {
-        handle: '.data-grid-row',
+        handle: '.row-drag-handle',
         animation: 150,
         onEnd: (evt) => {
           // Update data order
