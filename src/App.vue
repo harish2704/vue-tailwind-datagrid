@@ -29,7 +29,7 @@ export default {
       tableColumns: [],
       tableOptions: {
         pagination: true,
-        itemsPerPage: 10,
+        itemsPerPage: 5,
         itemsPerPageOptions: [5, 10, 20, 50, 100],
         globalSearch: true,
         editable: true,
@@ -41,13 +41,13 @@ export default {
         draggableColumns: true,
         resizableColumns: true,
         treeView: true,
-        saveState: true
+        saveState: !true
       }
     };
   },
   created() {
     // Generate sample data and columns
-    this.tableData = generateSampleData(100);
+    this.tableData = generateSampleData(300);
     this.tableColumns = generateColumns();
   },
   methods: {
